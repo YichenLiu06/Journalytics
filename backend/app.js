@@ -1,9 +1,22 @@
+const path = require('node:path')
 const express = require('express')
+const db = require('./db/queries.js')
 const cors = require('cors')
+const session = require('express-session')
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
 const controllers = require('./controllers/controllers')
 const jwt = require('jsonwebtoken')
+const bodyParser = require('body-parser')
+const JWTStrategy  = require("passport-jwt").Strategy
+const ExtractJWT = require("passport-jwt").ExtractJwt;
+require("dotenv").config();
+
 
 const app = express();
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.get('/api', (req, res) => {
     res.json({
@@ -11,34 +24,64 @@ app.get('/api', (req, res) => {
     })
 })
 
-app.get('/api/usernames', controllers.getUsernames)
+console.log(process.env.PASSPORT_SECRET)
 
-app.post('/api/posts', verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secretkey', (err, authData) => {
-        if(err) {
-            res.sendStatus(403)
-        } else {
-            res.json({
-                message: 'Post created...',
-                authData,
+passportOptions = {
+    secretOrKey: process.env.PASSPORT_SECRET,
+    audience: process.env.CLIENT,
+    jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken()
+}
 
-            })
+passport.use(new JWTStrategy(passportOptions, async (jwt_payload, done) => {
+        try {
+            console.log(jwt_payload.sub)
+            const user = await db.getUserByID(jwt_payload.sub)
+            console.log(user)
+            if (user) {
+                return done(null, true);
+            }
+                return done(null, false);
+        } 
+        catch(err) {
+            return done(err);
         }
     })
+)
+
+app.post('/api/register', async (req,res) => {
+    try {
+        console.log(req.body.username)
+        await db.insertUser(req.body.username, req.body.password)
+        res.status(200)
+        res.send()
+    } catch(err) {
+        res.status(500)
+        res.send()
+    }
 })
 
-app.post('/api/login', (req,res) => {
-    //Mock user
-    const user = {
-        id: 1,
-        username: "brad",
-        email: "brad@gmail.com"
+app.post('/api/login', async (req, res) => { 
+    try {
+        let { username, password } = req.body;
+        const user = await db.getUserByUsername(username)
+
+        if(!user){
+            return res.status(401).json({message : "Incorrect Username"})
+        }
+        if(user.password !== password) {
+            return res.status(401).json({message : "Incorrect Password"})
+        }
+        const secret = process.env.PASSPORT_SECRET
+        const token = jwt.sign({sub : user.id}, secret)
+        return res.status(200).json({message : "Authenticated", token})
+    }  
+    catch {
+        return res.status(500).json({message : "Server Error"})
     }
-    jwt.sign({user}, 'secretkey', (err, token) => {
-        res.json({
-            token
-        })
-    })
+});
+
+app.get("/api/protected", passport.authenticate('jwt', { session: false }), (req, res) => {
+    return res.status(200).send("YAY! this is a protected Route")
 })
 
 //verifyToken
