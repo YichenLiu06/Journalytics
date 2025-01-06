@@ -1,30 +1,25 @@
 const path = require('node:path')
 const express = require('express')
-const db = require('./db/queries.js')
 const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
-const controllers = require('./controllers/controllers')
 const jwt = require('jsonwebtoken')
 const bodyParser = require('body-parser')
 const JWTStrategy  = require("passport-jwt").Strategy
 const ExtractJWT = require("passport-jwt").ExtractJwt;
+const pool = require("./db/pool.js")
+const entryRouter = require("./routes/entryRouter.js")
+const userRouter = require ("./routes/userRouter.js")
 require("dotenv").config();
-
 
 const app = express();
 
+app.use("/users", userRouter);
+app.use("/entries", entryRouter);
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-app.get('/api', (req, res) => {
-    res.json({
-        message:"Welcome to the API"
-    })
-})
-
-console.log(process.env.PASSPORT_SECRET)
 
 passportOptions = {
     secretOrKey: process.env.PASSPORT_SECRET,
@@ -35,10 +30,10 @@ passportOptions = {
 passport.use(new JWTStrategy(passportOptions, async (jwt_payload, done) => {
         try {
             console.log(jwt_payload.sub)
-            const user = await db.getUserByID(jwt_payload.sub)
+            const user = (await pool.query("SELECT * FROM users WHERE id=$1;", [jwt_payload.sub])).rows[0]
             console.log(user)
             if (user) {
-                return done(null, true);
+                return done(null, user);
             }
                 return done(null, false);
         } 
@@ -48,23 +43,27 @@ passport.use(new JWTStrategy(passportOptions, async (jwt_payload, done) => {
     })
 )
 
-app.post('/api/register', async (req,res) => {
+
+
+app.post('/sign-up', async (req,res) => {
     try {
-        console.log(req.body.username)
-        await db.insertUser(req.body.username, req.body.password)
-        res.status(200)
-        res.send()
+        const user = (await pool.query("SELECT * FROM users WHERE username=$1;", [req.body.username])).rows[0]
+        if(user){
+            return res.status(409).json({message: `User ${req.body.username} already exists`})
+        }
+        else{
+            await pool.query("INSERT INTO users (username, password) VALUES ($1, $2);", [req.body.username, req.body.password])
+            return res.sendStatus(200)
+        }
     } catch(err) {
-        res.status(500)
-        res.send()
+        return res.sendStatus(500)
     }
 })
 
-app.post('/api/login', async (req, res) => { 
+app.post('/login', async (req, res) => { 
     try {
         let { username, password } = req.body;
-        const user = await db.getUserByUsername(username)
-
+        const user = (await pool.query("SELECT * FROM users WHERE username=$1;", [username])).rows[0]
         if(!user){
             return res.status(401).json({message : "Incorrect Username"})
         }
@@ -80,27 +79,8 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.get("/api/protected", passport.authenticate('jwt', { session: false }), (req, res) => {
+app.get("/protected", passport.authenticate('jwt', { session: false }), (req, res) => {
     return res.status(200).send("YAY! this is a protected Route")
 })
-
-//verifyToken
-function verifyToken(req, res, next) {
-    //Get Auth Header Value
-    const bearerHeader = req.headers['authorization']
-    //Check if bearer is undefined
-    if(typeof bearerHeader !== 'undefined') {
-        //Split at the space
-        const bearer = bearerHeader.split(' ') 
-
-        const bearerToken = bearer[1]
-
-        req.token = bearerToken
-        next();
-    } else {
-        //Forbidden
-        res.sendStatus(403)
-    }
-}
 
 app.listen(5000, () => console.log('Server started on port 5000'))

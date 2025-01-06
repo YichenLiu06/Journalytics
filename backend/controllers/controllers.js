@@ -1,24 +1,14 @@
-const db = require("../db/queries");
-const express = require('express')
 
-async function getUsernames(req, res) {
-  const usernames = await db.getAllUsernames();
-  console.log("Usernames: ", usernames);
-  res.send("Usernames: " + usernames.map(user => user.username).join(", "));
+
+function verifyToken(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+    const arrayToken = tokenPayload.split('.')
+    const tokenPayload = JSON.parse(atob(arrayToken[1]))
+    console.log(tokenPayload)
+    req.tokenPayload = tokenPayload
+    next()
 }
 
-async function createUsernameGet(req, res) {
-  // render the form
+module.exports={
+    verifyToken
 }
-
-async function createUsernamePost(req, res) {
-  const { username } = req.body;
-  await db.insertUsername(username);
-  res.redirect("/");
-}
-
-module.exports = {
-  getUsernames,
-  createUsernameGet,
-  createUsernamePost
-};
