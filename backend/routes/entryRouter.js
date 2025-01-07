@@ -49,6 +49,18 @@ entryRouter.get("/:id", passport.authenticate('jwt', { session: false }), async 
     }
 })
 
+entryRouter.get("/:id/insights", passport.authenticate('jwt', { session: false }), async (req, res) => {
+    try {
+        const entry = (await pool.query("SELECT * FROM entries WHERE id=$1;", [req.params.id])).rows[0]
+        if(!entry){
+            return res.status(400).json({message : "Entry With This ID Does Not Exist"})
+        }
+        return res.json(entry)
+    }
+    catch {
+        return res.sendStatus(500)
+    }
+})
 
 
 module.exports = entryRouter;
