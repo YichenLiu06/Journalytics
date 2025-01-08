@@ -63,6 +63,7 @@ app.post('/sign-up', async (req,res) => {
 app.post('/login', async (req, res) => { 
     try {
         let { username, password } = req.body;
+        console.log(username, password)
         const user = (await pool.query("SELECT * FROM users WHERE username=$1;", [username])).rows[0]
         if(!user){
             return res.status(401).json({message : "Incorrect Username"})
@@ -74,8 +75,8 @@ app.post('/login', async (req, res) => {
         const token = jwt.sign({sub : user.id}, secret)
         return res.status(200).json({message : "Authenticated", token})
     }  
-    catch {
-        return res.status(500).json({message : "Server Error"})
+    catch(err) {
+        return res.status(500).json(err)
     }
 });
 
