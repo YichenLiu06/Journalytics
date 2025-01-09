@@ -15,6 +15,8 @@ require("dotenv").config();
 
 const app = express();
 
+app.use(cors())
+
 app.use("/users", userRouter);
 app.use("/entries", entryRouter);
 
@@ -42,8 +44,6 @@ passport.use(new JWTStrategy(passportOptions, async (jwt_payload, done) => {
         }
     })
 )
-
-
 
 app.post('/sign-up', async (req,res) => {
     try {
