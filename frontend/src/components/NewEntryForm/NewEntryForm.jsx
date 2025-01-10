@@ -1,15 +1,15 @@
-function NewEntryForm({title, message, setTitle, setMessage}){
+function NewEntryForm({title, message, setTitle, setMessage, handleSubmit}){
     return (
         <div className="rounded-xl bg-zinc-800 p-4 flex flex-col items-center h-full gap-4">
-            <form action={import.meta.env.VITE_API_URL+"entries"} method="POST"
+            <form
             className="flex flex-col gap-4 h-full">
-                <label htmlFor="username">Title:</label>
-                <input placeholder="John Doe" type="text" name="username" id="username" size={85} className="p-2 rounded-xl"
+                <label htmlFor="title">Title:</label>
+                <input type="text" name="title" size={85} className="p-2 rounded-xl"
                 value={title} onChange={e => setTitle(e.target.value)}/>
-                <label htmlFor="password">Message:</label>
+                <label htmlFor="message">Message:</label>
                 <textarea name="message" cols="30" className="p-2 rounded-xl h-full"
                 value={message} onChange={e => setMessage(e.target.value)}/>
-                <button type="submit" className="mt-8">Submit</button>
+                <button type="submit" className="mt-8" onClick={handleSubmit}>Submit</button>
             </form>
         </div>
     )

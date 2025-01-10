@@ -14,7 +14,7 @@ entryRouter.use(express.json());
 //query parameters: created_after (Date), limit (Integer), offset (Integer)
 entryRouter.get("/", passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-        const entries = (await pool.query("SELECT * FROM entries WHERE created_at > $1 LIMIT $2 OFFSET $3;", [req.query.created_after || new Date(0,0,0,0,0,0,0).toISOString(), req.query.limit, req.query.offset])).rows
+        const entries = (await pool.query("SELECT * FROM entries WHERE created_at > $1 AND author_id = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4;", [req.query.created_after || new Date(0,0,0,0,0,0,0).toISOString(), req.user.id, req.query.limit, req.query.offset])).rows
         return res.json(entries)
     }
     catch(err) {
@@ -26,7 +26,7 @@ entryRouter.get("/", passport.authenticate('jwt', { session: false }), async (re
 
 entryRouter.post("/", passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-        await pool.query("INSERT INTO entries (author_id, created_at, content) VALUES ($1, $2, $3)", [req.user.id, new Date(Date.now()).toISOString(), req.body.content])
+        await pool.query("INSERT INTO entries (author_id, created_at, title, content) VALUES ($1, $2, $3, $4)", [req.user.id, new Date(Date.now()).toISOString(), req.body.title, req.body.content])
         console.log(new Date(Date.now()))
         return res.sendStatus(200)
     }

@@ -41,8 +41,8 @@ function LoginForm(props){
                     <input type="password" name="password" id="password" size={50} className="p-2 rounded-xl"
                     value={password}
                     onChange={e => setPassword(e.target.value)}/>
-                    <div>{error}</div>
-                    <button type="submit" className="mt-8" onClick={handleSubmit}>Submit</button>
+                    <div className="text-red-700">{error}</div>
+                    <button type="submit" className="mt-4" onClick={handleSubmit}>Submit</button>
                 </form>
             </div>  
         </div>

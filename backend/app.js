@@ -11,6 +11,7 @@ const ExtractJWT = require("passport-jwt").ExtractJwt;
 const pool = require("./db/pool.js")
 const entryRouter = require("./routes/entryRouter.js")
 const userRouter = require ("./routes/userRouter.js")
+const insightRouter = require("./routes/insightRouter.js")
 require("dotenv").config();
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(cors())
 
 app.use("/users", userRouter);
 app.use("/entries", entryRouter);
+app.use("/insights", insightRouter);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -53,10 +55,10 @@ app.post('/sign-up', async (req,res) => {
         }
         else{
             await pool.query("INSERT INTO users (username, password) VALUES ($1, $2);", [req.body.username, req.body.password])
-            return res.sendStatus(200)
+            return res.status(200).json({message:"Success"})
         }
     } catch(err) {
-        return res.sendStatus(500)
+        return res.status(500).json(err)
     }
 })
 
@@ -68,7 +70,7 @@ app.post('/login', async (req, res) => {
         if(!user){
             return res.status(401).json({message : "Incorrect Username"})
         }
-        if(user.password !== password) {
+        else if(user.password !== password) {
             return res.status(401).json({message : "Incorrect Password"})
         }
         const secret = process.env.PASSPORT_SECRET
@@ -80,8 +82,8 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get("/protected", passport.authenticate('jwt', { session: false }), (req, res) => {
-    return res.status(200).send("YAY! this is a protected Route")
+app.get('/authenticated', passport.authenticate('jwt', { session: false }), (req, res) => {
+    return res.status(200).json({message: "Authenticated"})
 })
 
 app.listen(5000, () => console.log('Server started on port 5000'))
