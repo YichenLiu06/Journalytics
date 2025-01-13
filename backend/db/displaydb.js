@@ -2,9 +2,7 @@ const { Client } = require("pg");
 require("dotenv").config();
 
 const SQL = `
-DELETE FROM entries;
-
-DELETE FROM users;
+SELECT * FROM users;
 `;
 
 async function main() {
@@ -13,7 +11,8 @@ async function main() {
     connectionString: "postgresql://"+process.env.DB_USER+":"+process.env.DB_PASSWORD+"@localhost:5432/journalytics",
   });
   await client.connect();
-  await client.query(SQL);
+  const data = (await client.query(SQL)).rows;
+  console.log(data)
   await client.end();
   console.log("done");
 }

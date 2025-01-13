@@ -12,6 +12,7 @@ const pool = require("./db/pool.js")
 const entryRouter = require("./routes/entryRouter.js")
 const userRouter = require ("./routes/userRouter.js")
 const insightRouter = require("./routes/insightRouter.js")
+const bcrypt = require('bcrypt')
 require("dotenv").config();
 
 const app = express();
@@ -54,10 +55,13 @@ app.post('/sign-up', async (req,res) => {
             return res.status(409).json({message: `User ${req.body.username} already exists`})
         }
         else{
-            await pool.query("INSERT INTO users (username, password) VALUES ($1, $2);", [req.body.username, req.body.password])
-            return res.status(200).json({message:"Success"})
+            bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
+                await pool.query("INSERT INTO users (username, password) VALUES ($1, $2);", [req.body.username, hashedPassword])
+                return res.status(200).json({message:"Success"})
+            });   
         }
     } catch(err) {
+        console.log(err)
         return res.status(500).json(err)
     }
 })
@@ -65,12 +69,11 @@ app.post('/sign-up', async (req,res) => {
 app.post('/login', async (req, res) => { 
     try {
         let { username, password } = req.body;
-        console.log(username, password)
         const user = (await pool.query("SELECT * FROM users WHERE username=$1;", [username])).rows[0]
         if(!user){
             return res.status(401).json({message : "Incorrect Username"})
         }
-        else if(user.password !== password) {
+        else if(!(await bcrypt.compare(password, user.password))) {
             return res.status(401).json({message : "Incorrect Password"})
         }
         const secret = process.env.PASSPORT_SECRET
@@ -78,6 +81,7 @@ app.post('/login', async (req, res) => {
         return res.status(200).json({message : "Authenticated", token})
     }  
     catch(err) {
+        console.log(err)
         return res.status(500).json(err)
     }
 });
