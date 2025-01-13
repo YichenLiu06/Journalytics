@@ -1,0 +1,20 @@
+{
+  "name": "journalytics",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/app.js & "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YichenLiu06/Journalytics.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YichenLiu06/Journalytics/issues"
+  },
+  "homepage": "https://github.com/YichenLiu06/Journalytics#readme",
+  "description": ""
+}
