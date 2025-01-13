@@ -40,6 +40,7 @@ function SignUpForm(props){
                     value={password}
                     onChange={e => setPassword(e.target.value)}/>
                     <div className="text-red-700">{error}</div>
+                    <a href="login">Already have an account? Log in here.</a>
                     <button type="submit" className="mt-4" onClick={handleSubmit}>Submit</button>
                 </form>
             </div>  

@@ -60,7 +60,7 @@ button:focus-visible {
 }
 
 input:focus, textarea:focus {
-  outline-color: #646cff;
+  outline: 1px solid #646cff;
 }
 
 @media (prefers-color-scheme: light) {

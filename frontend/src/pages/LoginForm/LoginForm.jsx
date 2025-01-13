@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 function LoginForm(props){
     let navigate = useNavigate();
     const [username, setUsername] = useState('username')
@@ -42,8 +41,10 @@ function LoginForm(props){
                     value={password}
                     onChange={e => setPassword(e.target.value)}/>
                     <div className="text-red-700">{error}</div>
+                    <a href="sign-up">Dont have an account? Sign up here.</a>
                     <button type="submit" className="mt-4" onClick={handleSubmit}>Submit</button>
                 </form>
+                
             </div>  
         </div>
         

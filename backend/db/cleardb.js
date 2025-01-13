@@ -1,22 +1,10 @@
-#! /usr/bin/env node
-
 const { Client } = require("pg");
 require("dotenv").config();
 
 const SQL = `
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  username VARCHAR ( 255 ),
-  password VARCHAR ( 255 )
-);
+DELETE FROM entries;
 
-CREATE TABLE IF NOT EXISTS entries (
-  id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  author_id VARCHAR ( 255 ),
-  created_at TIMESTAMPTZ,
-  title VARCHAR ( 255 ),
-  content TEXT,
-);
+DELETE FROM users
 `;
 
 async function main() {

@@ -14,7 +14,7 @@ entryRouter.use(express.json());
 //query parameters: created_after (Date), limit (Integer), offset (Integer)
 entryRouter.get("/", passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-        const entries = (await pool.query("SELECT * FROM entries WHERE created_at > $1 AND author_id = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4;", [req.query.created_after || new Date(0,0,0,0,0,0,0).toISOString(), req.user.id, req.query.limit, req.query.offset])).rows
+        const entries = (await pool.query("SELECT * FROM entries WHERE created_at > $1 AND created_at < $2 AND author_id = $3 ORDER BY created_at DESC LIMIT $4 OFFSET $5;", [req.query.created_after || new Date(0,0,0,0,0,0,0).toISOString(), req.query.created_before || new Date().toISOString(), req.user.id, req.query.limit, req.query.offset])).rows
         return res.json(entries)
     }
     catch(err) {
@@ -61,6 +61,4 @@ entryRouter.get("/:id/insights", passport.authenticate('jwt', { session: false }
         return res.sendStatus(500)
     }
 })
-
-
 module.exports = entryRouter;
