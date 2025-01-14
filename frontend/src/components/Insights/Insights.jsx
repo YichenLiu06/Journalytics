@@ -14,14 +14,19 @@ function isoDayOfWeek(dt) {
     return '' + wd; // string so it gets parsed
   }
 
+function parseISOString(s) {
+    var b = s.split(/\D+/);
+    return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
+}
+
 function Insights({chat, sentiment, generateInsights}){
 
     const [wordCountData, setWordCountData] = useState(null)
 
     useEffect(() => {
-        async function fetchEntriesOnDate(date){
+        async function fetchEntriesOnMonth(date){
             const adapter = new _adapters._date();
-            const entriesResponse = await fetch(import.meta.env.VITE_API_URL + `/entries?created_after=${adapter.startOf(date, 'day').toISOString()}&created_before=${adapter.endOf(date, 'day').toISOString()}`, {
+            const entriesResponse = await fetch(import.meta.env.VITE_API_URL + `/entries?created_after=${adapter.startOf(date, 'month').toISOString()}&created_before=${adapter.endOf(date, 'month').toISOString()}`, {
                 method: "get",
                 headers: new Headers({
                     'Authorization' : 'Bearer ' + window.localStorage.getItem("token")
@@ -31,29 +36,27 @@ function Insights({chat, sentiment, generateInsights}){
             return entriesData
         }
 
-        async function countWordsOnDate(date){
-            let wordCount = 0
-            const entries = await fetchEntriesOnDate(date)
-            for(let i=0; i<entries.length; i++){
-                wordCount += countWords(entries[i].content)
-            }
-            return wordCount;
-        }
-
         async function generateWordCountData(){
             const adapter = new _adapters._date();
             const data = [];
             let dt = adapter.startOf(new Date(), 'month');
             const end = adapter.endOf(dt, 'month');
+            const entries = await fetchEntriesOnMonth(dt)
+            let i = 0;
             while (dt <= end) {
-            const iso = adapter.format(dt, 'yyyy-MM-dd');
-            data.push({
-                x: isoDayOfWeek(dt),
-                y: iso,
-                d: iso,
-                v: await countWordsOnDate(dt)
-            });
-            dt = new Date(dt.setDate(dt.getDate() + 1));
+                let wordCount = 0
+                while(i < entries.length && parseISOString(entries[i].created_at).getDate() == dt.getDate()){
+                    wordCount += countWords(entries[i].content);
+                    i++;
+                }
+                const iso = adapter.format(dt, 'yyyy-MM-dd');
+                data.push({
+                    x: isoDayOfWeek(dt),
+                    y: iso,
+                    d: iso,
+                    v: wordCount
+                });
+                dt = new Date(dt.setDate(dt.getDate() + 1));
             }
             setWordCountData(data)
         }
