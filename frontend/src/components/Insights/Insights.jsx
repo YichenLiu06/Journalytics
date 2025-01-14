@@ -65,7 +65,7 @@ function Insights({chat, sentiment, generateInsights}){
     return (
         <div className="rounded-xl bg-zinc-800 w-[25%] h-full p-4 flex flex-col gap-4 border border-zinc-600">
             <Cohere sentiment={sentiment} chat={chat} generateInsights={generateInsights}/>
-            {wordCountData !== null && <MatrixChart rawData={wordCountData} />}
+            {wordCountData === null ? <div className="rounded-xl p-4 bg-zinc-700">Loading Charts...</div> : <MatrixChart rawData={wordCountData} />}
         </div>
     )
 }
