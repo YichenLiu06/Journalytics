@@ -1,5 +1,5 @@
-#Journalytics
-##AI-Powered journaling app
+# Journalytics
+## AI-Powered journaling app
 
 A journaling app that gives you personalized AI insights based on your journal entries, and graphs for your journaling habits to ensure you stay consistent.
 You can see the project here at https://journalytics-frontend.onrender.com/
