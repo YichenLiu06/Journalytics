@@ -13,7 +13,6 @@ userRouter.use(express.json());
 userRouter.get("/", passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
         const users = (await pool.query("SELECT * FROM users;")).rows
-        console.log(users)
         return res.json(users)
     }
     catch {

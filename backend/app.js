@@ -34,9 +34,7 @@ passportOptions = {
 
 passport.use(new JWTStrategy(passportOptions, async (jwt_payload, done) => {
         try {
-            console.log(jwt_payload.sub)
             const user = (await pool.query("SELECT * FROM users WHERE id=$1;", [jwt_payload.sub])).rows[0]
-            console.log(user)
             if (user) {
                 return done(null, user);
             }
@@ -61,7 +59,6 @@ app.post('/sign-up', async (req,res) => {
             });   
         }
     } catch(err) {
-        console.log(err)
         return res.status(500).json(err)
     }
 })
@@ -81,7 +78,6 @@ app.post('/login', async (req, res) => {
         return res.status(200).json({message : "Authenticated", token})
     }  
     catch(err) {
-        console.log(err)
         return res.status(500).json(err)
     }
 });

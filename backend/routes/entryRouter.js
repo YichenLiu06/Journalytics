@@ -18,8 +18,6 @@ entryRouter.get("/", passport.authenticate('jwt', { session: false }), async (re
         return res.json(entries)
     }
     catch(err) {
-        console.log(new Date(0,0,0,0,0,0,Date.now()).toISOString())
-        console.log(err)
         return res.status(500).json({message : err})
     }
 })
@@ -27,7 +25,6 @@ entryRouter.get("/", passport.authenticate('jwt', { session: false }), async (re
 entryRouter.post("/", passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
         await pool.query("INSERT INTO entries (author_id, created_at, title, content) VALUES ($1, $2, $3, $4)", [req.user.id, new Date(Date.now()).toISOString(), req.body.title, req.body.content])
-        console.log(new Date(Date.now()))
         return res.sendStatus(200)
     }
     catch {

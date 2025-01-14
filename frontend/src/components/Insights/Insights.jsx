@@ -37,7 +37,6 @@ function Insights({chat, sentiment, generateInsights}){
             for(let i=0; i<entries.length; i++){
                 wordCount += countWords(entries[i].content)
             }
-            console.log(wordCount)
             return wordCount;
         }
 
@@ -56,7 +55,6 @@ function Insights({chat, sentiment, generateInsights}){
             });
             dt = new Date(dt.setDate(dt.getDate() + 1));
             }
-            console.log(data)
             setWordCountData(data)
         }
 
